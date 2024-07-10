@@ -1,13 +1,11 @@
 # AI Development Workflow
 
-This project sets up a workflow for developing AI applications using Docker containers and a CI/CD pipeline with Jenkins.
+This project sets up a workflow for developing AI applications using Docker containers and a CI/CD pipeline with Jenkins. It includes logging and monitoring using Logstash, Kibana, Prometheus, and Grafana.
 
 ## Prerequisites
 
 - Docker
 - Docker Compose
-- Jenkins
-- PowerShell or a Unix-based shell
 
 ## Setup
 
@@ -22,14 +20,14 @@ This project sets up a workflow for developing AI applications using Docker cont
     OPENAI_API_KEY=your-openai-api-key
     ```
 
-3. Run the Docker setup script:
+3. Run the Docker Compose setup:
     - For Unix-based systems:
         ```sh
-        ./run_docker.sh
+        ./run_all.sh
         ```
     - For Windows PowerShell:
         ```powershell
-        ./run_docker.ps1
+        ./run_all.ps1
         ```
 
 ## Project Structure
@@ -45,6 +43,10 @@ This project sets up a workflow for developing AI applications using Docker cont
 - `unit_testing_agent/`: Code for the unit testing agent.
 - `deployment_automation_agent/`: Code for the deployment automation agent.
 - `logging/`: Configuration for Logstash.
+- `kibana/`: Configuration for Kibana.
+- `prometheus/`: Configuration for Prometheus.
+- `grafana/`: Configuration for Grafana.
+- `jenkins/`: Configuration for Jenkins.
 
 ## License
 

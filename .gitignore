@@ -23,3 +23,6 @@ env/
 venv/
 ENV/
 venv.bak/
+
+# Node modules
+node_modules/
