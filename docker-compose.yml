@@ -1,6 +1,74 @@
-version: '3.8'
-
 services:
+  requirement_gathering_agent:
+    build: ./requirement_gathering_agent
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    ports:
+      - "5001:5001"
+
+  requirements_analysis_agent:
+    build: ./requirements_analysis_agent
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    ports:
+      - "5002:5002"
+
+  sprint_planning_agent:
+    build: ./sprint_planning_agent
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    ports:
+      - "5003:5003"
+
+  approval_agent:
+    build: ./approval_agent
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    ports:
+      - "5004:5004"
+
+  frontend_components_agent:
+    build: ./frontend_components_agent
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    ports:
+      - "5005:5005"
+
+  backend_microservices_agent:
+    build: ./backend_microservices_agent
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    ports:
+      - "5006:5006"
+
+  database_schema_agent:
+    build: ./database_schema_agent
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    ports:
+      - "5007:5007"
+
+  api_gateway_agent:
+    build: ./api_gateway_agent
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    ports:
+      - "5008:5008"
+
+  unit_testing_agent:
+    build: ./unit_testing_agent
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    ports:
+      - "5009:5009"
+
+  deployment_automation_agent:
+    build: ./deployment_automation_agent
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    ports:
+      - "5010:5010"
+
   logstash:
     build: ./logging
     volumes:
