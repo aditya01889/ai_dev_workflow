@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   requirement_gathering_agent:
     build: ./requirement_gathering_agent
@@ -7,141 +9,119 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
     ports:
       - "5000:5000"
-
-  rabbitmq:
-    image: rabbitmq:3-management
-    ports:
-      - "5672:5672"
-      - "15672:15672"
+    networks:
+      - ai_network
 
   requirements_analysis_agent:
-    build: ./requirement_analysis_agent
+    build: ./requirements_analysis_agent
     environment:
       - RABBITMQ_HOST=rabbitmq
       - REQUIREMENTS_QUEUE=requirements_queue
       - ANALYSIS_QUEUE=analysis_queue
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-    ports:
-      - "5002:5002"
+    networks:
+      - ai_network
 
   sprint_planning_agent:
     build: ./sprint_planning_agent
     environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
       - RABBITMQ_HOST=rabbitmq
       - ANALYSIS_QUEUE=analysis_queue
       - APPROVAL_QUEUE=approval_queue
-    ports:
-      - "5003:5003"
+    networks:
+      - ai_network
 
   approval_agent:
     build: ./approval_agent
     environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
       - RABBITMQ_HOST=rabbitmq
       - APPROVAL_QUEUE=approval_queue
     ports:
-      - "5004:5004"
+      - "5001:5001"
+    networks:
+      - ai_network
 
   frontend_components_agent:
     build: ./frontend_components_agent
     environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
       - RABBITMQ_HOST=rabbitmq
       - APPROVAL_QUEUE=approval_queue
       - FRONTEND_COMPONENT_QUEUE=frontend_component_queue
-    ports:
-      - "5005:5005"
+    networks:
+      - ai_network
 
   backend_microservices_agent:
     build: ./backend_microservices_agent
     environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
       - RABBITMQ_HOST=rabbitmq
       - APPROVAL_QUEUE=approval_queue
       - BACKEND_MICROSERVICE_QUEUE=backend_microservice_queue
-
-    ports:
-      - "5006:5006"
+    networks:
+      - ai_network
 
   database_schema_agent:
     build: ./database_schema_agent
     environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
       - RABBITMQ_HOST=rabbitmq
       - APPROVAL_QUEUE=approval_queue
       - DATABASE_SCHEMA_QUEUE=database_schema_queue
-
-    ports:
-      - "5007:5007"
+    networks:
+      - ai_network
 
   api_gateway_agent:
     build: ./api_gateway_agent
     environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
       - RABBITMQ_HOST=rabbitmq
       - APPROVAL_QUEUE=approval_queue
       - API_GATEWAY_QUEUE=api_gateway_queue
-    ports:
-      - "5008:5008"
+    networks:
+      - ai_network
 
   unit_testing_agent:
     build: ./unit_testing_agent
     environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
       - RABBITMQ_HOST=rabbitmq
       - APPROVAL_QUEUE=approval_queue
       - UNIT_TEST_QUEUE=unit_test_queue
-    ports:
-      - "5009:5009"
+    networks:
+      - ai_network
 
-  deployment_automation_agent:
-    build: ./deployment_automation_agent
+  deployment_agent:
+    build: ./deployment_agent
     environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
       - RABBITMQ_HOST=rabbitmq
       - APPROVAL_QUEUE=approval_queue
       - DEPLOYMENT_QUEUE=deployment_queue
-    ports:
-      - "5010:5010"
+    networks:
+      - ai_network
 
-  logstash:
+  logging:
     build: ./logging
-    volumes:
-      - ./logging/logstash.conf:/usr/share/logstash/config/logstash.conf
     ports:
       - "5044:5044"
-      - "9600:9600"
+    networks:
+      - ai_network
 
   kibana:
     build: ./kibana
     ports:
       - "5601:5601"
-    environment:
-      ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
+    networks:
+      - ai_network
 
   prometheus:
     build: ./prometheus
     ports:
       - "9090:9090"
-    volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-
-  node-exporter:
-    image: prom/node-exporter:latest
-    ports:
-      - "9100:9100"
+    networks:
+      - ai_network
 
   grafana:
     build: ./grafana
     ports:
       - "3000:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=grafanai  # Set your admin password
-      - GF_USERS_ALLOW_SIGN_UP=false  # Disable user sign-up if not needed
-    volumes:
-      - ./grafana/provisioning:/etc/grafana/provisioning  # Provisioning files for datasources, dashboards, etc.
-      - ./grafana/config/grafana.ini:/etc/grafana/grafana.ini  # Custom Grafana configuration if needed
+    networks:
+      - ai_network
 
   jenkins:
     build: ./jenkins
@@ -150,19 +130,22 @@ services:
       - "50000:50000"
     environment:
       - JENKINS_OPTS=--prefix=/jenkins
-      - JENKINS_ADMIN_USERNAME=admin
-      - JENKINS_ADMIN_PASSWORD=admin
     volumes:
       - jenkins_home:/var/jenkins_home
       - ./jenkins/init.groovy.d:/usr/share/jenkins/ref/init.groovy.d
+    networks:
+      - ai_network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - ai_network
+
+networks:
+  ai_network:
 
 volumes:
   jenkins_home:
-
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.1
-    environment:
-      - discovery.type=single-node
-    ports:
-      - "9200:9200"
-      - "9300:9300"

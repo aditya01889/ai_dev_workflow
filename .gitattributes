@@ -1,3 +1,46 @@
 # Ensure consistent line endings for shell scripts
 *.sh text eol=lf
 *.ps1 text eol=crlf
+
+# Set default behavior to automatically normalize line endings
+* text=auto
+
+# Explicitly declare text files you want to always be normalized and converted
+*.c text
+*.h text
+*.cpp text
+*.hpp text
+*.py text
+*.java text
+*.rb text
+*.js text
+*.html text
+*.css text
+
+# Images should be treated as binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.svg binary
+
+# Files that should always have LF line endings
+*.sh text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.md text eol=lf
+*.html text eol=lf
+
+# Files that should always have CRLF line endings
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Exclude specific large binary files from diff
+*.zip -diff
+*.tar.gz -diff
+*.tgz -diff
+*.exe -diff
+*.dll -diff

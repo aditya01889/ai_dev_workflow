@@ -6,6 +6,7 @@ This project sets up a workflow for developing AI applications using Docker cont
 
 - Docker
 - Docker Compose
+- Jenkins
 
 ## Setup
 
@@ -18,6 +19,16 @@ This project sets up a workflow for developing AI applications using Docker cont
 2. Create a `.env` file in the project root with your environment variables:
     ```plaintext
     OPENAI_API_KEY=your-openai-api-key
+    RABBITMQ_HOST=localhost
+    REQUIREMENTS_QUEUE=requirements_queue
+    ANALYSIS_QUEUE=analysis_queue
+    APPROVAL_QUEUE=approval_queue
+    FRONTEND_COMPONENT_QUEUE=frontend_component_queue
+    BACKEND_MICROSERVICE_QUEUE=backend_microservice_queue
+    DATABASE_SCHEMA_QUEUE=database_schema_queue
+    API_GATEWAY_QUEUE=api_gateway_queue
+    DEPLOYMENT_QUEUE=deployment_queue
+    UNIT_TEST_QUEUE=unit_test_queue
     ```
 
 3. Run the Docker Compose setup:
@@ -47,6 +58,7 @@ This project sets up a workflow for developing AI applications using Docker cont
 - `prometheus/`: Configuration for Prometheus.
 - `grafana/`: Configuration for Grafana.
 - `jenkins/`: Configuration for Jenkins.
+
 
 ## License
 
