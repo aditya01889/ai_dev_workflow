@@ -1,12 +1,11 @@
-# AI Development Workflow
+# AI Development Workflow with UI
 
-This project sets up a workflow for developing AI applications using Docker containers and a CI/CD pipeline with Jenkins. It includes logging and monitoring using Logstash, Kibana, Prometheus, and Grafana.
+This project sets up a workflow for developing AI applications using Docker containers and a CI/CD pipeline with Jenkins. It includes a UI for gathering requirements, previewing work, and checking logs.
 
 ## Prerequisites
 
 - Docker
 - Docker Compose
-- Jenkins
 
 ## Setup
 
@@ -19,16 +18,6 @@ This project sets up a workflow for developing AI applications using Docker cont
 2. Create a `.env` file in the project root with your environment variables:
     ```plaintext
     OPENAI_API_KEY=your-openai-api-key
-    RABBITMQ_HOST=localhost
-    REQUIREMENTS_QUEUE=requirements_queue
-    ANALYSIS_QUEUE=analysis_queue
-    APPROVAL_QUEUE=approval_queue
-    FRONTEND_COMPONENT_QUEUE=frontend_component_queue
-    BACKEND_MICROSERVICE_QUEUE=backend_microservice_queue
-    DATABASE_SCHEMA_QUEUE=database_schema_queue
-    API_GATEWAY_QUEUE=api_gateway_queue
-    DEPLOYMENT_QUEUE=deployment_queue
-    UNIT_TEST_QUEUE=unit_test_queue
     ```
 
 3. Run the Docker Compose setup:
@@ -40,6 +29,8 @@ This project sets up a workflow for developing AI applications using Docker cont
         ```powershell
         ./run_all.ps1
         ```
+
+4. Access the frontend UI at `http://localhost:3000`
 
 ## Project Structure
 
@@ -58,7 +49,7 @@ This project sets up a workflow for developing AI applications using Docker cont
 - `prometheus/`: Configuration for Prometheus.
 - `grafana/`: Configuration for Grafana.
 - `jenkins/`: Configuration for Jenkins.
-
+- `frontend/my-app/`: React frontend application.
 
 ## License
 

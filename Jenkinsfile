@@ -6,6 +6,52 @@ pipeline {
     }
 
     stages {
+        stage('Build Frontend') {
+            steps {
+                script {
+                    sh 'docker-compose build frontend'
+                }
+            }
+        }
+        stage('Run Frontend') {
+            steps {
+                script {
+                    sh 'docker-compose up -d frontend'
+                }
+            }
+        }
+        stage('Build Backend') {
+            steps {
+                script {
+                    sh 'docker-compose build requirement_gathering_agent'
+                    sh 'docker-compose build requirements_analysis_agent'
+                    sh 'docker-compose build sprint_planning_agent'
+                    sh 'docker-compose build approval_agent'
+                    sh 'docker-compose build frontend_components_agent'
+                    sh 'docker-compose build backend_microservices_agent'
+                    sh 'docker-compose build database_schema_agent'
+                    sh 'docker-compose build api_gateway_agent'
+                    sh 'docker-compose build unit_testing_agent'
+                    sh 'docker-compose build deployment_automation_agent'
+                }
+            }
+        }
+        stage('Run Backend') {
+            steps {
+                script {
+                    sh 'docker-compose up -d requirement_gathering_agent'
+                    sh 'docker-compose up -d requirements_analysis_agent'
+                    sh 'docker-compose up -d sprint_planning_agent'
+                    sh 'docker-compose up -d approval_agent'
+                    sh 'docker-compose up -d frontend_components_agent'
+                    sh 'docker-compose up -d backend_microservices_agent'
+                    sh 'docker-compose up -d database_schema_agent'
+                    sh 'docker-compose up -d api_gateway_agent'
+                    sh 'docker-compose up -d unit_testing_agent'
+                    sh 'docker-compose up -d deployment_automation_agent'
+                }
+            }
+        }
         stage('Requirement Gathering') {
             steps {
                 script {

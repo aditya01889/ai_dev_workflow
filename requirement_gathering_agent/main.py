@@ -6,6 +6,7 @@ from flask import Flask, request, jsonify
 import logging
 import tempfile
 import shutil
+from flask_cors import CORS
 
 # Load environment variables from .env file
 load_dotenv()
@@ -16,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 # Flask app initialization
 app = Flask(__name__)
+CORS(app)  # Allow cross-origin requests
 
 # RabbitMQ connection parameters
 RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'localhost')

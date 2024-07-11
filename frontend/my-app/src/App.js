@@ -12,9 +12,14 @@ function App() {
             const newMessage = { user: "User", text: input };
             setMessages([...messages, newMessage]);
             setInput("");
+
             // Send message to backend
             await axios.post('/api/gather', { text: input });
         }
+    };
+
+    const handleFinalize = async () => {
+        await axios.post('/api/finalize');
     };
 
     const fetchLogs = async () => {
@@ -46,6 +51,7 @@ function App() {
                         placeholder="Type your requirements..."
                     />
                     <button onClick={handleSendMessage}>Send</button>
+                    <button onClick={handleFinalize}>Finalize</button>
                 </div>
             </div>
             <div className="preview-section">

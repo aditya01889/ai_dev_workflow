@@ -1,4 +1,12 @@
 services:
+
+  frontend:
+    build: ./frontend/my-app
+    ports:
+      - "3000:3000"
+    networks:
+      - ai_network
+      
   requirement_gathering_agent:
     build: ./requirement_gathering_agent
     environment:
