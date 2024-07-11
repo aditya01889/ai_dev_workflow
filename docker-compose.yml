@@ -7,6 +7,8 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
     ports:
       - "5000:5000"
+    networks:
+      - ai_network
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -31,6 +33,12 @@ services:
       - RABBITMQ_HOST=rabbitmq
       - ANALYSIS_QUEUE=analysis_queue
       - APPROVAL_QUEUE=approval_queue
+      - FRONTEND_COMPONENT_QUEUE=frontend_component_queue
+      - BACKEND_MICROSERVICE_QUEUE=backend_microservice_queue
+      - DATABASE_SCHEMA_QUEUE=database_schema_queue
+      - API_GATEWAY_QUEUE=api_gateway_queue
+    networks:
+      - ai_network
     ports:
       - "5003:5003"
 
@@ -40,8 +48,15 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - RABBITMQ_HOST=rabbitmq
       - APPROVAL_QUEUE=approval_queue
+      - FRONTEND_COMPONENT_QUEUE=frontend_component_queue
+      - BACKEND_MICROSERVICE_QUEUE=backend_microservice_queue
+      - DATABASE_SCHEMA_QUEUE=database_schema_queue
+      - API_GATEWAY_QUEUE=api_gateway_queue
+      - SPRINT_PLANNING_QUEUE=sprint_planning_queue
     ports:
       - "5004:5004"
+    networks:
+      - ai_network
 
   frontend_components_agent:
     build: ./frontend_components_agent
@@ -50,8 +65,11 @@ services:
       - RABBITMQ_HOST=rabbitmq
       - APPROVAL_QUEUE=approval_queue
       - FRONTEND_COMPONENT_QUEUE=frontend_component_queue
+      - UNIT_TEST_QUEUE=unit_test_queue
     ports:
       - "5005:5005"
+    networks:
+      - ai_network
 
   backend_microservices_agent:
     build: ./backend_microservices_agent
@@ -60,6 +78,10 @@ services:
       - RABBITMQ_HOST=rabbitmq
       - APPROVAL_QUEUE=approval_queue
       - BACKEND_MICROSERVICE_QUEUE=backend_microservice_queue
+      - UNIT_TEST_QUEUE=unit_test_queue
+
+    networks:
+      - ai_network
 
     ports:
       - "5006:5006"
@@ -71,7 +93,10 @@ services:
       - RABBITMQ_HOST=rabbitmq
       - APPROVAL_QUEUE=approval_queue
       - DATABASE_SCHEMA_QUEUE=database_schema_queue
-
+      - UNIT_TEST_QUEUE=unit_test_queue
+    
+    networks:
+      - ai_network
     ports:
       - "5007:5007"
 
@@ -82,6 +107,9 @@ services:
       - RABBITMQ_HOST=rabbitmq
       - APPROVAL_QUEUE=approval_queue
       - API_GATEWAY_QUEUE=api_gateway_queue
+      - UNIT_TEST_QUEUE=unit_test_queue
+    networks:
+      - ai_network
     ports:
       - "5008:5008"
 
@@ -92,6 +120,13 @@ services:
       - RABBITMQ_HOST=rabbitmq
       - APPROVAL_QUEUE=approval_queue
       - UNIT_TEST_QUEUE=unit_test_queue
+      - FRONTEND_COMPONENT_QUEUE=frontend_component_queue
+      - BACKEND_MICROSERVICE_QUEUE=backend_microservice_queue
+      - DATABASE_SCHEMA_QUEUE=database_schema_queue
+      - API_GATEWAY_QUEUE=api_gateway_queue
+      - DEPLOYMENT_QUEUE=deployment_queue
+    networks:
+      - ai_network
     ports:
       - "5009:5009"
 
@@ -100,8 +135,10 @@ services:
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - RABBITMQ_HOST=rabbitmq
-      - APPROVAL_QUEUE=approval_queue
+      - UNIT_TEST_QUEUE=unit_test_queue
       - DEPLOYMENT_QUEUE=deployment_queue
+    networks:
+      - ai_network
     ports:
       - "5010:5010"
 

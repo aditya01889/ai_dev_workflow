@@ -19,6 +19,7 @@ nlp = spacy.load("en_core_web_sm")
 RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'localhost')
 REQUIREMENTS_QUEUE = os.getenv('REQUIREMENTS_QUEUE', 'requirements_queue')
 ANALYSIS_QUEUE = os.getenv('ANALYSIS_QUEUE', 'analysis_queue')
+REQUIREMENT_GATHERING_QUEUE = os.getenv('REQUIREMENT_GATHERING_QUEUE', 'requirement_gathering_queue')
 
 def analyze_requirements(requirements):
     """
@@ -26,59 +27,26 @@ def analyze_requirements(requirements):
     :param requirements: dict containing the requirements
     :return: dict with validation status and analysis or error message
     """
-    # Check for presence of required fields
-    required_fields = ["text", "project_id", "author"]
-    for field in required_fields:
-        if field not in requirements:
-            return {"status": "invalid", "message": f"Missing required field: {field}"}
-    
-    # Validate field data types
-    if not isinstance(requirements["text"], str):
-        return {"status": "invalid", "message": "Field 'text' must be a string"}
-    if not isinstance(requirements["project_id"], int):
-        return {"status": "invalid", "message": "Field 'project_id' must be an integer"}
-    if not isinstance(requirements["author"], str):
-        return {"status": "invalid", "message": "Field 'author' must be a string"}
+    schema = requirements.get("schema", {})
+    data = requirements.get("data", {})
 
-    # Validate content
-    if len(requirements["text"]) < 20:
-        return {"status": "invalid", "message": "Field 'text' must be at least 20 characters long"}
+    # Validate data against the schema
+    for field, rules in schema.items():
+        if field not in data:
+            return {"status": "invalid", "message": f"Missing required field: {field}", "field": field}
+        if "type" in rules and not isinstance(data[field], rules["type"]):
+            return {"status": "invalid", "message": f"Field '{field}' must be of type {rules['type'].__name__}", "field": field}
+        if "min_length" in rules and len(data[field]) < rules["min_length"]:
+            return {"status": "invalid", "message": f"Field '{field}' must be at least {rules['min_length']} characters long", "field": field}
 
-    # Semantic validation using SpaCy
-    doc = nlp(requirements["text"])
-    if len(doc.ents) == 0:
-        return {"status": "invalid", "message": "Field 'text' must contain at least one named entity"}
+    # Perform content analysis using SpaCy
+    if "text" in data:
+        doc = nlp(data["text"])
+        if len(doc.ents) == 0:
+            return {"status": "invalid", "message": "Field 'text' must contain at least one named entity", "field": "text"}
+        data["entities"] = [(ent.text, ent.label_) for ent in doc.ents]
 
-    # Business Rule: Ensure text contains certain mandatory keywords
-    mandatory_keywords = ["deadline", "requirement", "feature"]
-    if not any(keyword in requirements["text"].lower() for keyword in mandatory_keywords):
-        return {"status": "invalid", "message": f"Field 'text' must contain at least one of the mandatory keywords: {mandatory_keywords}"}
-
-    # Business Rule: Validate dates mentioned in the text (if any)
-    dates = [ent.text for ent in doc.ents if ent.label_ == "DATE"]
-    # Example check: Ensure dates are within the next year
-    if dates:
-        from datetime import datetime, timedelta
-        one_year_later = datetime.now() + timedelta(days=365)
-        for date in dates:
-            try:
-                parsed_date = datetime.strptime(date, "%B %d, %Y")  # Adjust the date format as per your requirements
-                if parsed_date > one_year_later:
-                    return {"status": "invalid", "message": f"Date {date} is too far in the future"}
-            except ValueError:
-                return {"status": "invalid", "message": f"Date {date} is not in a valid format"}
-
-    # Business Rule: Validate project_id and author (mocked for example purposes)
-    valid_project_ids = [101, 102, 103]  # Example project IDs
-    valid_authors = ["alice", "bob", "carol"]  # Example authors
-    if requirements["project_id"] not in valid_project_ids:
-        return {"status": "invalid", "message": "Invalid project_id"}
-    if requirements["author"].lower() not in valid_authors:
-        return {"status": "invalid", "message": "Invalid author"}
-
-    # If all validations pass, return the analysis
-    analysis = [(ent.text, ent.label_) for ent in doc.ents]
-    return {"status": "valid", "analysis": analysis}
+    return {"status": "valid", "data": data}
 
 def receive_from_queue():
     """Receive messages from the requirements queue and analyze them."""
@@ -94,7 +62,8 @@ def receive_from_queue():
             if analysis["status"] == "valid":
                 send_to_next_queue(analysis, ANALYSIS_QUEUE)
             else:
-                send_to_next_queue(analysis, REQUIREMENTS_QUEUE)
+                logger.info(f"Validation failed: {analysis['message']}")
+                send_to_next_queue(analysis, REQUIREMENT_GATHERING_QUEUE)
 
         channel.basic_consume(queue=REQUIREMENTS_QUEUE, on_message_callback=callback, auto_ack=True)
         logger.info("Started consuming from the requirements queue")

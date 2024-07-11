@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 # RabbitMQ connection parameters
 RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'localhost')
-APPROVAL_QUEUE = os.getenv('APPROVAL_QUEUE', 'approval_queue')
+UNIT_TEST_QUEUE = os.getenv('UNIT_TEST_QUEUE', 'unit_test_queue')
 DEPLOYMENT_QUEUE = os.getenv('DEPLOYMENT_QUEUE', 'deployment_queue')
 
 def deploy_application():
@@ -50,20 +50,24 @@ def self_heal():
         time.sleep(60)
 
 def receive_from_queue():
-    """Receive messages from the approval queue and deploy the application."""
+    """Receive messages from the unit test queue and deploy the application if all defects are resolved."""
     try:
         connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST))
         channel = connection.channel()
-        channel.queue_declare(queue=APPROVAL_QUEUE)
+        channel.queue_declare(queue=UNIT_TEST_QUEUE)
 
         def callback(ch, method, properties, body):
-            user_stories = json.loads(body)
-            logger.info(f"Received user stories: {user_stories}")
-            deploy_application()
-            send_to_next_queue({"status": "Deployed"}, DEPLOYMENT_QUEUE)
+            task = json.loads(body)
+            logger.info(f"Received task: {task}")
 
-        channel.basic_consume(queue=APPROVAL_QUEUE, on_message_callback=callback, auto_ack=True)
-        logger.info("Started consuming from the approval queue")
+            if task.get('unit_test_results') and "All tests passed" in task['unit_test_results']:
+                deploy_application()
+                send_to_next_queue({"status": "Deployed"}, DEPLOYMENT_QUEUE)
+            else:
+                logger.info("Defects found or tests not passed. Deployment skipped.")
+
+        channel.basic_consume(queue=UNIT_TEST_QUEUE, on_message_callback=callback, auto_ack=True)
+        logger.info("Started consuming from the unit test queue")
         channel.start_consuming()
     except Exception as e:
         logger.error(f"Failed to receive from queue: {e}")

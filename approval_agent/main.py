@@ -18,6 +18,11 @@ app = Flask(__name__)
 # RabbitMQ connection parameters
 RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'localhost')
 APPROVAL_QUEUE = os.getenv('APPROVAL_QUEUE', 'approval_queue')
+FRONTEND_COMPONENT_QUEUE = os.getenv('FRONTEND_COMPONENT_QUEUE', 'frontend_component_queue')
+BACKEND_MICROSERVICE_QUEUE = os.getenv('BACKEND_MICROSERVICE_QUEUE', 'backend_microservice_queue')
+DATABASE_SCHEMA_QUEUE = os.getenv('DATABASE_SCHEMA_QUEUE', 'database_schema_queue')
+API_GATEWAY_QUEUE = os.getenv('API_GATEWAY_QUEUE', 'api_gateway_queue')
+SPRINT_PLANNING_QUEUE = os.getenv('SPRINT_PLANNING_QUEUE', 'sprint_planning_queue')
 
 def send_to_queue(message, queue_name):
     """Send a message to the specified RabbitMQ queue."""
@@ -64,10 +69,10 @@ def receive_from_queue():
             # Here you would typically send this content to a human for approval
             # Simulating approval for demonstration
             approval_data = {
-                "approved": True, 
-                "content": content, 
-                "next_queue": "next_queue", 
-                "prev_queue": "sprint_planning_queue"
+                "approved": False,  # Default to False, to be replaced with actual user input
+                "content": content,
+                "next_queue": determine_next_queue(content),  # Determine the next queue based on content
+                "prev_queue": SPRINT_PLANNING_QUEUE
             }
             send_to_queue(approval_data, APPROVAL_QUEUE)
 
@@ -78,6 +83,19 @@ def receive_from_queue():
         logger.error(f"Failed to receive from queue: {e}")
         raise
 
+def determine_next_queue(content):
+    """Determine the next queue based on the task type."""
+    task_type = content.get("task")
+    if task_type == "Build frontend":
+        return FRONTEND_COMPONENT_QUEUE
+    elif task_type == "Create backend API":
+        return BACKEND_MICROSERVICE_QUEUE
+    elif task_type == "Design database schema":
+        return DATABASE_SCHEMA_QUEUE
+    elif task_type == "Create API gateway":
+        return API_GATEWAY_QUEUE
+    return None
+
 if __name__ == "__main__":
-    receive_from_queue()
     app.run(host='0.0.0.0', port=5001)
+    receive_from_queue()

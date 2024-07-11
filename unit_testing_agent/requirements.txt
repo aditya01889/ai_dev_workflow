@@ -1,3 +1,4 @@
+pika
+openai
 pytest
 python-dotenv
-pika

@@ -19,6 +19,7 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'localhost')
 APPROVAL_QUEUE = os.getenv('APPROVAL_QUEUE', 'approval_queue')
 DATABASE_SCHEMA_QUEUE = os.getenv('DATABASE_SCHEMA_QUEUE', 'database_schema_queue')
+UNIT_TEST_QUEUE = os.getenv('UNIT_TEST_QUEUE', 'unit_test_queue')
 
 def generate_database_schema(task_description):
     """Generate database schema using OpenAI gpt-4o based on task description."""
@@ -39,29 +40,45 @@ def generate_database_schema(task_description):
         return ""
 
 def receive_from_queue():
-    """Receive messages from the approval queue and generate database schemas."""
+    """Receive messages from the approval queue and unit test queue to generate or fix database schemas."""
     try:
         connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST))
         channel = connection.channel()
         channel.queue_declare(queue=APPROVAL_QUEUE)
+        channel.queue_declare(queue=UNIT_TEST_QUEUE)
 
         def callback(ch, method, properties, body):
-            user_stories = json.loads(body)
-            logger.info(f"Received user stories: {user_stories}")
-            for task in user_stories.get('tasks', []):
-                task_description = task.get('description', 'No description provided')
-                schema_code = generate_database_schema(task_description)
-                if schema_code:
-                    send_to_next_queue(schema_code, DATABASE_SCHEMA_QUEUE)
+            task = json.loads(body)
+            logger.info(f"Received task: {task}")
+
+            if task.get('approved', False):
+                if "unit_test_results" in task:
+                    # Handle defects
+                    defects = task["unit_test_results"]
+                    logger.info(f"Handling defects: {defects}")
+                    # Simulate fixing defects
+                    task["status"] = "completed"
+                    task["defects_fixed"] = True
+                    send_to_queue(task, UNIT_TEST_QUEUE)
+                else:
+                    # Generate database schema
+                    task_description = task.get('description', 'No description provided')
+                    schema_code = generate_database_schema(task_description)
+                    if schema_code:
+                        task["code_snippet"] = schema_code
+                        send_to_queue(task, UNIT_TEST_QUEUE)
+            else:
+                logger.info("Task not approved, skipping.")
 
         channel.basic_consume(queue=APPROVAL_QUEUE, on_message_callback=callback, auto_ack=True)
-        logger.info("Started consuming from the approval queue")
+        channel.basic_consume(queue=UNIT_TEST_QUEUE, on_message_callback=callback, auto_ack=True)
+        logger.info("Started consuming from the approval and unit test queues")
         channel.start_consuming()
     except Exception as e:
         logger.error(f"Failed to receive from queue: {e}")
         raise
 
-def send_to_next_queue(message, queue_name):
+def send_to_queue(message, queue_name):
     """Send a message to the specified RabbitMQ queue."""
     try:
         connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST))
