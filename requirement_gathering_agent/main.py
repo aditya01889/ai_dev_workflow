@@ -38,7 +38,7 @@ def save_file(file, file_type):
     requirements[file_type].append(file_path)
     logger.info(f"Saved {file_type} file: {file_path}")
 
-@app.route('/gather', methods=['POST'])
+@app.route('/api/gather', methods=['POST'])
 def gather_requirements():
     """Endpoint to gather requirements from user input."""
     try:
@@ -60,7 +60,7 @@ def gather_requirements():
         logger.error(f"Error in gathering requirements: {e}")
         return jsonify({"error": "Internal server error"}), 500
 
-@app.route('/finalize', methods=['POST'])
+@app.route('/api/finalize', methods=['POST'])
 def finalize_requirements():
     """Endpoint to finalize and send the collected requirements to the analysis queue."""
     try:
@@ -70,6 +70,13 @@ def finalize_requirements():
     except Exception as e:
         logger.error(f"Error in finalizing requirements: {e}")
         return jsonify({"error": "Internal server error"}), 500
+
+@app.route('/api/logs', methods=['GET'])
+def get_logs():
+    """Endpoint to fetch logs."""
+    # Implement logic to fetch logs
+    logs = ["Log entry 1", "Log entry 2", "Log entry 3"]  # Replace with actual log fetching logic
+    return jsonify(logs)
 
 def send_to_queue(message, queue_name):
     """Send a message to the specified RabbitMQ queue."""

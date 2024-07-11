@@ -1,0 +1,38 @@
+.App {
+  display: flex;
+  height: 100vh;
+}
+
+.chat-window, .preview-section {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.chat-window {
+  border-right: 1px solid #ccc;
+}
+
+.messages, .logs {
+  height: 80%;
+  overflow-y: auto;
+}
+
+.input {
+  display: flex;
+}
+
+.input input {
+  flex: 1;
+  padding: 10px;
+  font-size: 16px;
+}
+
+.input button {
+  padding: 10px;
+  font-size: 16px;
+}
+
+.preview-section {
+  padding-left: 20px;
+}
