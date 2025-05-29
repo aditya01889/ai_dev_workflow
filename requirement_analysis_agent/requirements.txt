@@ -1,3 +1,4 @@
-spacy
+spacy<3.7.0  # Version 3.6.x is the last to support Python 3.8
 python-dotenv
 pika
+flask_cors

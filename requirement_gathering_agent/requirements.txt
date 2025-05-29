@@ -1,3 +1,4 @@
 python-dotenv
 pika
 Flask
+flask_cors

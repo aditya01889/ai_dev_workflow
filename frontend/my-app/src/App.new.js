@@ -39,9 +39,7 @@ import {
   Fab,
   Slide,
   Fade,
-  Zoom,
-  LinearProgress,
-  ListItemButton
+  Zoom
 } from '@mui/material';
 import {
   Send as SendIcon,
@@ -59,8 +57,6 @@ import {
   Dashboard as DashboardIcon,
   Chat as ChatIcon,
   Settings as SettingsIcon,
-  Pause as PauseIcon,
-  PlayArrow as PlayArrowIcon,
   People as PeopleIcon,
   Assessment as AssessmentIcon,
   Notifications as NotificationsIcon,
@@ -317,26 +313,12 @@ function App() {
     setIsLoading(true);
 
     try {
-      // Send message to requirement gathering agent using FormData
-      const formData = new FormData();
-      formData.append('text', input);
-      formData.append('type', 'text');
-      
-      const response = await fetch('http://localhost:5000/api/gather', {
-        method: 'POST',
-        body: formData,
-        // Don't set Content-Type header, let the browser set it with the correct boundary
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       const botResponse = {
         id: Date.now() + 1,
-        text: data.message || 'I received your requirements. Processing...',
+        text: `I received: "${input}"`,
         sender: 'ai',
         timestamp: new Date(),
         type: 'text'
@@ -345,30 +327,18 @@ function App() {
       setMessages(prev => [...prev, botResponse]);
       showNotification('Message sent successfully', 'success');
       
-      // Update requirement gathering agent status
+      // Update agent status
       const updatedAgents = [...agents];
-      const requirementAgent = updatedAgents.find(agent => agent.id === 'requirement');
-      if (requirementAgent) {
-        requirementAgent.status = 'active';
-        requirementAgent.progress = Math.min(100, requirementAgent.progress + 25);
-        requirementAgent.lastActive = 'Just now';
+      const activeAgent = updatedAgents[Math.floor(Math.random() * updatedAgents.length)];
+      if (activeAgent) {
+        activeAgent.status = 'active';
+        activeAgent.progress = Math.min(100, activeAgent.progress + 25);
         setAgents(updatedAgents);
       }
       
     } catch (error) {
       console.error('Error sending message:', error);
-      
-      // Fallback response if API call fails
-      const errorResponse = {
-        id: Date.now() + 1,
-        text: `I encountered an error: ${error.message}. I'll still process your request.`,
-        sender: 'ai',
-        timestamp: new Date(),
-        type: 'error'
-      };
-      
-      setMessages(prev => [...prev, errorResponse]);
-      showNotification('Failed to send message to server', 'error');
+      showNotification('Failed to send message', 'error');
     } finally {
       setIsLoading(false);
     }

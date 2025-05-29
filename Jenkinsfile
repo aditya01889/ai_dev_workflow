@@ -24,7 +24,7 @@ pipeline {
             steps {
                 script {
                     sh 'docker-compose build requirement_gathering_agent'
-                    sh 'docker-compose build requirements_analysis_agent'
+                    sh 'docker-compose build requirement_analysis_agent'
                     sh 'docker-compose build sprint_planning_agent'
                     sh 'docker-compose build approval_agent'
                     sh 'docker-compose build frontend_components_agent'
@@ -40,7 +40,7 @@ pipeline {
             steps {
                 script {
                     sh 'docker-compose up -d requirement_gathering_agent'
-                    sh 'docker-compose up -d requirements_analysis_agent'
+                    sh 'docker-compose up -d requirement_analysis_agent'
                     sh 'docker-compose up -d sprint_planning_agent'
                     sh 'docker-compose up -d approval_agent'
                     sh 'docker-compose up -d frontend_components_agent'
@@ -62,7 +62,7 @@ pipeline {
         stage('Requirements Analysis') {
             steps {
                 script {
-                    runDocker('requirements_analysis_agent')
+                    runDocker('requirement_analysis_agent')
                 }
             }
         }

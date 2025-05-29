@@ -1,3 +1,7 @@
+param (
+    [string]$CustomComposeFile
+)
+
 # Check if Docker is installed
 if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
     Write-Error "Docker is not installed. Please install Docker and try again."
@@ -12,11 +16,6 @@ if (-not (Get-Command docker-compose -ErrorAction SilentlyContinue)) {
 
 # Default Docker Compose file
 $composeFile = "docker-compose.yml"
-
-# Allow specifying a custom Docker Compose file
-param (
-    [string]$CustomComposeFile
-)
 
 if ($CustomComposeFile) {
     $composeFile = $CustomComposeFile

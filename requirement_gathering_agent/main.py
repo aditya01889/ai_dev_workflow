@@ -12,7 +12,7 @@ from flask_cors import CORS
 load_dotenv()
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)  # Changed to DEBUG for more detailed logs
 logger = logging.getLogger(__name__)
 
 # Flask app initialization
@@ -44,19 +44,24 @@ def save_file(file, file_type):
 def gather_requirements():
     """Endpoint to gather requirements from user input."""
     try:
+        logger.debug("Received a request to gather requirements")
         if 'files' in request.files:
             for file in request.files.getlist('files'):
                 file_type = request.form.get('type', 'text')
                 save_file(file, file_type)
-        elif 'links' in request.json:
-            requirements["links"].extend(request.json['links'])
-            logger.info(f"Added links: {request.json['links']}")
-        elif 'text' in request.json:
-            requirements["text"].append(request.json['text'])
-            logger.info(f"Added text: {request.json['text']}")
+        elif request.json:
+            if 'links' in request.json:
+                requirements["links"].extend(request.json['links'])
+                logger.info(f"Added links: {request.json['links']}")
+            elif 'text' in request.json:
+                requirements["text"].append(request.json['text'])
+                logger.info(f"Added text: {request.json['text']}")
+            else:
+                return jsonify({"error": "Invalid input, files or JSON required"}), 400
         else:
             return jsonify({"error": "Invalid input, files or JSON required"}), 400
 
+        logger.debug(f"Current requirements: {requirements}")
         return jsonify({"status": "Requirements received. Add more or finalize."}), 200
     except Exception as e:
         logger.error(f"Error in gathering requirements: {e}")
@@ -66,6 +71,7 @@ def gather_requirements():
 def finalize_requirements():
     """Endpoint to finalize and send the collected requirements to the analysis queue."""
     try:
+        logger.debug("Finalizing requirements")
         send_to_queue(requirements, REQUIREMENTS_QUEUE)
         shutil.rmtree(temp_dir)  # Clean up temporary directory
         return jsonify({"status": "Requirements finalized and sent to the analysis queue"}), 200
@@ -83,10 +89,18 @@ def get_logs():
 def send_to_queue(message, queue_name):
     """Send a message to the specified RabbitMQ queue."""
     try:
+        logger.debug(f"Connecting to RabbitMQ at {RABBITMQ_HOST}")
         connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST))
         channel = connection.channel()
-        channel.queue_declare(queue=queue_name)
-        channel.basic_publish(exchange='', routing_key=queue_name, body=json.dumps(message))
+        # Ensure the queue declaration is consistent
+        channel.queue_declare(queue=queue_name, durable=True)
+        channel.basic_publish(
+            exchange='',
+            routing_key=queue_name,
+            body=json.dumps(message),
+            properties=pika.BasicProperties(
+                delivery_mode=2,  # make message persistent
+            ))
         connection.close()
         logger.info(f"Message sent to queue {queue_name}")
     except Exception as e:

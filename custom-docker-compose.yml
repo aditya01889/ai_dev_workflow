@@ -1,141 +1,6 @@
 version: '3.8'
 
 services:
-  requirement_gathering_agent:
-    build: ./requirement_gathering_agent
-    environment:
-      - RABBITMQ_HOST=rabbitmq
-      - REQUIREMENTS_QUEUE=requirements_queue
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-    ports:
-      - "5000:5000"
-    networks:
-      - ai_network
-
-  requirements_analysis_agent:
-    build: ./requirements_analysis_agent
-    environment:
-      - RABBITMQ_HOST=rabbitmq
-      - REQUIREMENTS_QUEUE=requirements_queue
-      - ANALYSIS_QUEUE=analysis_queue
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-    networks:
-      - ai_network
-
-  sprint_planning_agent:
-    build: ./sprint_planning_agent
-    environment:
-      - RABBITMQ_HOST=rabbitmq
-      - ANALYSIS_QUEUE=analysis_queue
-      - APPROVAL_QUEUE=approval_queue
-    networks:
-      - ai_network
-
-  approval_agent:
-    build: ./approval_agent
-    environment:
-      - RABBITMQ_HOST=rabbitmq
-      - APPROVAL_QUEUE=approval_queue
-    ports:
-      - "5001:5001"
-    networks:
-      - ai_network
-
-  frontend_components_agent:
-    build: ./frontend_components_agent
-    environment:
-      - RABBITMQ_HOST=rabbitmq
-      - APPROVAL_QUEUE=approval_queue
-      - FRONTEND_COMPONENT_QUEUE=frontend_component_queue
-    networks:
-      - ai_network
-
-  backend_microservices_agent:
-    build: ./backend_microservices_agent
-    environment:
-      - RABBITMQ_HOST=rabbitmq
-      - APPROVAL_QUEUE=approval_queue
-      - BACKEND_MICROSERVICE_QUEUE=backend_microservice_queue
-    networks:
-      - ai_network
-
-  database_schema_agent:
-    build: ./database_schema_agent
-    environment:
-      - RABBITMQ_HOST=rabbitmq
-      - APPROVAL_QUEUE=approval_queue
-      - DATABASE_SCHEMA_QUEUE=database_schema_queue
-    networks:
-      - ai_network
-
-  api_gateway_agent:
-    build: ./api_gateway_agent
-    environment:
-      - RABBITMQ_HOST=rabbitmq
-      - APPROVAL_QUEUE=approval_queue
-      - API_GATEWAY_QUEUE=api_gateway_queue
-    networks:
-      - ai_network
-
-  unit_testing_agent:
-    build: ./unit_testing_agent
-    environment:
-      - RABBITMQ_HOST=rabbitmq
-      - APPROVAL_QUEUE=approval_queue
-      - UNIT_TEST_QUEUE=unit_test_queue
-    networks:
-      - ai_network
-
-  deployment_agent:
-    build: ./deployment_agent
-    environment:
-      - RABBITMQ_HOST=rabbitmq
-      - APPROVAL_QUEUE=approval_queue
-      - DEPLOYMENT_QUEUE=deployment_queue
-    networks:
-      - ai_network
-
-  logging:
-    build: ./logging
-    ports:
-      - "5044:5044"
-    networks:
-      - ai_network
-
-  kibana:
-    build: ./kibana
-    ports:
-      - "5601:5601"
-    networks:
-      - ai_network
-
-  prometheus:
-    build: ./prometheus
-    ports:
-      - "9090:9090"
-    networks:
-      - ai_network
-
-  grafana:
-    build: ./grafana
-    ports:
-      - "3000:3000"
-    networks:
-      - ai_network
-
-  jenkins:
-    build: ./jenkins
-    ports:
-      - "8080:8080"
-      - "50000:50000"
-    environment:
-      - JENKINS_OPTS=--prefix=/jenkins
-    volumes:
-      - jenkins_home:/var/jenkins_home
-      - ./jenkins/init.groovy.d:/usr/share/jenkins/ref/init.groovy.d
-    networks:
-      - ai_network
-
   rabbitmq:
     image: rabbitmq:3-management
     ports:
@@ -143,9 +8,34 @@ services:
       - "15672:15672"
     networks:
       - ai_network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+
+
+
+
+
+
+
+
+
+
+
+
+  frontend:
+    build: ./frontend/my-app
+    ports:
+      - "3000:80"
+    networks:
+      - ai_network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
 
 networks:
   ai_network:
-
-volumes:
-  jenkins_home:
